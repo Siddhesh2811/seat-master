@@ -37,7 +37,7 @@ export interface Seat {
 export interface RowConfig {
   label: string;
   seatCount: number;
-  aisleAfter?: number;
+  aisles?: number[]; // Support multiple aisles at specific seat numbers
 }
 
 export interface SectionConfig {
@@ -59,7 +59,7 @@ export interface EventConfiguration {
 export const rowConfigSchema = z.object({
   label: z.string(),
   seatCount: z.number().min(1),
-  aisleAfter: z.number().optional(),
+  aisles: z.array(z.number()).optional(),
 });
 
 export const sectionConfigSchema = z.object({

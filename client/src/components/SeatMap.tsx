@@ -71,10 +71,10 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                       <div className="flex gap-1.5">
                         {Array.from({ length: row.seatCount }).map((_, i) => {
                           const seatNum = i + 1;
+                          const hasAisle = row.aisles?.includes(i);
                           const seatData = getSeat(zone.name, section.name, row.label, seatNum);
-                          const status = seatData?.status || "available"; // Default to available if not found
+                          const status = seatData?.status || "available";
                           
-                          // Mock a seat object if not found in DB yet (for optimistic rendering)
                           const seatObj: Seat = seatData || {
                             id: `temp-${zone.name}-${section.name}-${row.label}-${seatNum}`,
                             eventId: 0,
@@ -83,9 +83,8 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                           };
 
                           return (
-                            <div key={seatNum} className="flex">
-                              {row.aisleAfter === i && <div className="w-8" />} {/* Aisle Spacer */}
-                              
+                            <div key={seatNum} className="flex items-center">
+                              {hasAisle && <div className="w-8" />}
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <motion.button

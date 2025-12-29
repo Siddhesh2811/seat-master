@@ -133,7 +133,10 @@ export default function EventDetails() {
                 <div className="lg:col-span-2 space-y-4">
                   <div className="bg-card rounded-xl border border-border shadow-sm p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold">Layout Configuration (JSON)</h3>
+                      <div>
+                        <h3 className="font-bold">Layout Configuration</h3>
+                        <p className="text-xs text-muted-foreground mt-1">Directly edit the JSON structure to define zones, sections, rows, and multiple aisles.</p>
+                      </div>
                       <Button onClick={handleConfigSave} disabled={updateEvent.isPending}>
                         {updateEvent.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Save Configuration
@@ -150,27 +153,32 @@ export default function EventDetails() {
 
                 <div className="space-y-4">
                   <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
-                     <h4 className="font-bold text-primary mb-2">Help Guide</h4>
+                     <h4 className="font-bold text-primary mb-2">Configuration Guide</h4>
                      <p className="text-sm text-muted-foreground mb-4">
-                       Define zones, sections, and rows using the JSON format. The visualizer will automatically adapt to this structure.
+                       Define your layout using the JSON format. You can now add multiple aisles per row.
                      </p>
-                     <pre className="text-xs bg-card p-3 rounded border border-border overflow-auto">
-{`{
-  "zones": [
-    {
-      "name": "Orchestra",
-      "sections": [
-        {
-          "name": "Center",
-          "rows": [
-            { "label": "A", "seatCount": 10 }
-          ]
-        }
-      ]
-    }
-  ]
-}`}
-                     </pre>
+                     <div className="space-y-4">
+                       <div>
+                         <span className="text-xs font-bold uppercase text-primary/70">Aisles Example</span>
+                         <pre className="text-[10px] bg-card p-3 rounded border border-border mt-1">
+{`"rows": [
+  { 
+    "label": "A", 
+    "seatCount": 20,
+    "aisles": [5, 15] 
+  }
+]`}
+                         </pre>
+                         <p className="text-[10px] text-muted-foreground mt-1 italic">* This places aisles after seat 5 and seat 15.</p>
+                       </div>
+                       
+                       <div className="pt-2 border-t border-primary/10">
+                         <h5 className="text-xs font-bold mb-1">Visual UI Alternative</h5>
+                         <p className="text-[10px] text-muted-foreground">
+                           While a full drag-and-drop builder is coming soon, you can quickly build layouts using this JSON editor which allows for precision control over every seat and aisle position.
+                         </p>
+                       </div>
+                     </div>
                   </div>
                 </div>
               </div>
