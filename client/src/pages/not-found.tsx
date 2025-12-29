@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 
@@ -12,8 +13,14 @@ export default function NotFound() {
           </div>
 
           <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
+            The page you requested does not exist.
           </p>
+
+          <div className="mt-6">
+            <Link href="/events" className="text-sm font-medium text-blue-600 hover:text-blue-500 hover:underline">
+              Return to Events Dashboard
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
