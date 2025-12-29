@@ -65,10 +65,10 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                   <div className="text-xs text-center text-muted-foreground mb-2">{section.name}</div>
                   
                   {section.rows.map((row) => (
-                    <div key={row.label} className="flex items-center gap-3">
+                    <div key={row.label} className="flex items-center justify-center gap-3 w-full">
                       <span className="w-6 text-xs font-mono text-muted-foreground text-right">{row.label}</span>
                       
-                      <div className="flex gap-1.5">
+                      <div className="flex items-center justify-center gap-1.5 flex-1">
                         {Array.from({ length: row.seatCount }).map((_, i) => {
                           const seatNum = i + 1;
                           const hasAisle = row.aisles?.includes(i);
