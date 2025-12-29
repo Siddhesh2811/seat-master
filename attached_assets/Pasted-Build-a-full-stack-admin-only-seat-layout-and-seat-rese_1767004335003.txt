@@ -1,0 +1,113 @@
+Build a full-stack admin-only seat layout and seat reservation management web application.
+
+IMPORTANT CONSTRAINTS
+- There must be NO authentication, NO login, NO users
+- App is assumed to be admin-only by default
+- Focus on correctness, stability, and clean structure
+- App must run successfully in Replit
+
+TECH STACK
+- Frontend: React
+- Backend: Node.js with Express
+- Database: Use JSON or in-memory storage (MongoDB optional but not required)
+- Styling: CSS Grid / Flexbox
+
+PROJECT STRUCTURE
+- Single repository
+- /server → Express backend
+- /client → React frontend
+- Backend runs on port 3000
+- Frontend runs on port 5173 (or auto-configured)
+- App auto-starts correctly in Replit
+
+CORE FEATURES
+
+EVENT MANAGEMENT
+- Create, edit, delete multiple events
+- Event fields:
+  - Event Name
+  - Event Date
+  - Venue Name
+- List events on a dashboard
+- Open seating editor for any event
+
+SEATING CONFIGURATION
+For each event, allow admin to configure:
+
+1. ZONES
+- Zones are selectable:
+  - Front
+  - Middle
+  - Back
+
+2. SECTIONS PER ZONE
+- Sections are selectable per zone:
+  - Left
+  - Center
+  - Right
+
+3. ROWS PER SECTION
+- Rows are created dynamically
+- Each row has:
+  - Row label (A, B, C… or custom)
+  - Number of seats (may vary per row)
+  - Optional aisle split (example: insert passage after 6 seats)
+
+4. PASSAGES (AISLES)
+- Visual passages must exist:
+  - Between sections
+  - Inside rows at split position
+  - Between zones
+
+SEAT GENERATION RULES
+- Seats are auto-generated from configuration
+- Each seat must have a unique ID:
+  ZONE-SECTION-ROW-SEATNUMBER
+- Seat states:
+  - Available
+  - Reserved
+  - Blocked
+
+VISUAL SEAT LAYOUT
+- Render a fully visual seating layout similar to movie theatre / auditorium seating
+- Use CSS Grid or Flexbox
+- Layout hierarchy:
+  Zone → Section → Row → Seat
+- Render passages as empty gaps
+- Seat color coding:
+  - Green → Available
+  - Red → Reserved
+  - Grey → Blocked
+- Labels for zones, sections, and rows must be visible
+
+SEAT MANAGEMENT
+- Clicking a seat cycles through:
+  Available → Reserved → Blocked → Available
+- Seat state must be saved and persisted
+- Reloading page must restore layout and seat states
+
+BULK OPERATIONS
+- Reserve / block / unblock entire rows
+- Reserve / block / unblock entire sections
+- Reset all seats for an event
+
+UI PAGES
+- Event Dashboard (list + create events)
+- Seating Configuration Page
+- Visual Seat Management Page
+
+NON-FUNCTIONAL REQUIREMENTS
+- Clean, readable code
+- Reusable React components
+- Clear comments for key logic
+- Error handling for invalid configurations
+- Responsive layout (desktop-first is fine)
+
+FINAL DELIVERABLE
+- Fully working app
+- No authentication
+- Stable runtime in Replit
+- Clear README explaining:
+  - How to create events
+  - How to configure seating
+  - How to manage seat reservations
