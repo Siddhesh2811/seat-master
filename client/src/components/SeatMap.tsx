@@ -46,7 +46,7 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
 
   return (
     <div className="w-full overflow-x-auto pb-12">
-      <div className="min-w-[800px] flex flex-col items-center gap-12 p-8">
+      <div className="flex flex-col items-center gap-12 p-8">
         
         {/* Stage Area */}
         <div className="w-3/4 h-16 bg-gradient-to-b from-primary/20 to-transparent rounded-t-[50%] border-t-4 border-primary/30 flex items-center justify-center mb-8">
