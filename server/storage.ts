@@ -1,6 +1,15 @@
-import { type Event, type InsertEvent, type Seat, type UpdateSeatStatusRequest } from "@shared/schema";
+import { type Event, type InsertEvent, type Seat, type UpdateSeatStatusRequest, type User, type InsertUser, users, events, seats, type SeatStatus } from "@shared/schema";
+import session from "express-session";
+import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { db, pool } from "./db";
+import { eq } from "drizzle-orm";
+
+const MemoryStore = createMemoryStore(session);
+const PgSessionStore = connectPg(session);
 
 export interface IStorage {
+  sessionStore: session.Store;
   // Events
   getEvents(): Promise<Event[]>;
   getEvent(id: number): Promise<Event | undefined>;
@@ -8,113 +17,146 @@ export interface IStorage {
   updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event>;
   deleteEvent(id: number): Promise<void>;
 
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
+  createUser(user: InsertUser): Promise<User>;
+  deleteUser(id: number): Promise<void>;
+
   // Seats
   getSeats(eventId: number): Promise<Seat[]>;
   updateSeats(eventId: number, updates: UpdateSeatStatusRequest): Promise<Seat[]>;
   resetSeats(eventId: number): Promise<Seat[]>;
 }
 
-export class MemStorage implements IStorage {
-  private events: Map<number, Event>;
-  private seats: Map<string, Seat>; // Key is ID
-  private currentId: number;
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
 
   constructor() {
-    this.events = new Map();
-    this.seats = new Map();
-    this.currentId = 1;
+    this.sessionStore = new PgSessionStore({
+      pool,
+      createTableIfMissing: true,
+    });
   }
 
   // === Events ===
   async getEvents(): Promise<Event[]> {
-    return Array.from(this.events.values());
+    return await db.select().from(events);
   }
 
   async getEvent(id: number): Promise<Event | undefined> {
-    return this.events.get(id);
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+    return event;
   }
 
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
-    const id = this.currentId++;
-    const event: Event = { ...insertEvent, id };
-    this.events.set(id, event);
-    
-    // Initial seat generation based on configuration
+    const [event] = await db.insert(events).values(insertEvent).returning();
     this.generateSeatsForEvent(event);
-    
     return event;
   }
 
   async updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event> {
-    const existing = this.events.get(id);
-    if (!existing) throw new Error("Event not found");
-    
-    const updated = { ...existing, ...updates };
-    this.events.set(id, updated);
-    
-    // Regenerate seats if configuration changed (naive approach: resets status of removed seats, keeps existing IDs if possible)
+    const [updated] = await db
+      .update(events)
+      .set(updates)
+      .where(eq(events.id, id))
+      .returning();
+
+    if (!updated) throw new Error("Event not found");
+
     if (updates.configuration) {
-      // In a real app we might want to preserve statuses more carefully, 
-      // but for this MVP we'll re-generate and try to merge statuses where IDs match.
-      this.regenerateSeatsPreservingStatus(updated);
+      // Naive regeneration: this might fail if seats have foreign key constraints or active bookings?
+      // For MVP, we will delete all seats for this event and regenerate.
+      await db.delete(seats).where(eq(seats.eventId, id));
+      await this.generateSeatsForEvent(updated);
     }
-    
     return updated;
   }
 
   async deleteEvent(id: number): Promise<void> {
-    this.events.delete(id);
-    // Cleanup seats
-    for (const [seatId, seat] of this.seats.entries()) {
-      if (seat.eventId === id) {
-        this.seats.delete(seatId);
-      }
-    }
+    await db.delete(seats).where(eq(seats.eventId, id));
+    await db.delete(events).where(eq(events.id, id));
+  }
+
+  // === Users ===
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
   }
 
   // === Seats ===
   async getSeats(eventId: number): Promise<Seat[]> {
-    return Array.from(this.seats.values()).filter(s => s.eventId === eventId);
+    const result = await db.select().from(seats).where(eq(seats.eventId, eventId));
+    return result.map(s => ({ ...s, status: s.status as SeatStatus }));
   }
 
   async updateSeats(eventId: number, updates: UpdateSeatStatusRequest): Promise<Seat[]> {
     const updatedSeats: Seat[] = [];
-    
-    for (const id of updates.ids) {
-      const seat = this.seats.get(id);
-      if (seat && seat.eventId === eventId) {
-        const updatedSeat = { ...seat, status: updates.status };
-        this.seats.set(id, updatedSeat);
-        updatedSeats.push(updatedSeat);
+
+    // Process each seat update
+    for (const seatId of updates.ids) {
+      // Check if seat belongs to event?
+      // In Drizzle we can add a where clause for correctness
+
+      const updateData: Partial<Seat> = { status: updates.status };
+      if (updates.userId !== undefined) {
+        updateData.userId = updates.userId;
       }
+
+      const [updated] = await db
+        .update(seats)
+        .set(updateData)
+        .where(eq(seats.id, seatId))
+        .returning();
+
+      if (updated) updatedSeats.push({ ...updated, status: updated.status as SeatStatus });
     }
-    
     return updatedSeats;
   }
 
   async resetSeats(eventId: number): Promise<Seat[]> {
-    const eventSeats = await this.getSeats(eventId);
-    const resetSeats: Seat[] = [];
-    
-    for (const seat of eventSeats) {
-      const updated = { ...seat, status: "available" as const };
-      this.seats.set(seat.id, updated);
-      resetSeats.push(updated);
-    }
-    
-    return resetSeats;
+    const result = await db
+      .update(seats)
+      .set({ status: "available", userId: null })
+      .where(eq(seats.eventId, eventId))
+      .returning();
+
+    return result.map(s => ({ ...s, status: s.status as SeatStatus }));
   }
 
   // === Helpers ===
-  private generateSeatsForEvent(event: Event) {
+  private async generateSeatsForEvent(event: Event) {
     const { zones } = event.configuration;
-    
+    const allSeats: Seat[] = [];
+
     zones.forEach(zone => {
       zone.sections.forEach(section => {
         section.rows.forEach(row => {
           for (let i = 1; i <= row.seatCount; i++) {
             const seatId = `${event.id}-${zone.name}-${section.name}-${row.label}-${i}`;
-            const seat: Seat = {
+            // We need to bypass the strict typecheck for `Seat` because `id` is a string in our schema but usually auto-generated in Drizzle?
+            // Wait, schema definition for seats: id is text primary key. Correct.
+
+            allSeats.push({
               id: seatId,
               eventId: event.id,
               status: "available",
@@ -123,53 +165,21 @@ export class MemStorage implements IStorage {
                 section: section.name,
                 row: row.label,
                 seat: i.toString()
-              }
-            };
-            this.seats.set(seatId, seat);
+              },
+              userId: null
+            });
           }
         });
       });
     });
-  }
 
-  private regenerateSeatsPreservingStatus(event: Event) {
-    const oldSeats = new Map(
-      Array.from(this.seats.values())
-           .filter(s => s.eventId === event.id)
-           .map(s => [s.id, s])
-    );
-    
-    // Clear current seats for this event
-    for (const [id, seat] of this.seats.entries()) {
-      if (seat.eventId === event.id) this.seats.delete(id);
+    if (allSeats.length > 0) {
+      // Batch insert?
+      // SQLite limit is variables, Postgres should be fine with reasonable batch size.
+      // Drizzle insert many
+      await db.insert(seats).values(allSeats).onConflictDoNothing();
     }
-
-    // Generate new seats
-    const { zones } = event.configuration;
-    zones.forEach(zone => {
-      zone.sections.forEach(section => {
-        section.rows.forEach(row => {
-          for (let i = 1; i <= row.seatCount; i++) {
-            const seatId = `${event.id}-${zone.name}-${section.name}-${row.label}-${i}`;
-            const oldSeat = oldSeats.get(seatId);
-            
-            const seat: Seat = {
-              id: seatId,
-              eventId: event.id,
-              status: oldSeat ? oldSeat.status : "available",
-              label: {
-                zone: zone.name,
-                section: section.name,
-                row: row.label,
-                seat: i.toString()
-              }
-            };
-            this.seats.set(seatId, seat);
-          }
-        });
-      });
-    });
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

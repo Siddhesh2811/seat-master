@@ -31,6 +31,8 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
         return "bg-destructive border-destructive text-destructive-foreground hover:bg-destructive/90";
       case "blocked":
         return "bg-muted-foreground/30 border-transparent text-muted-foreground hover:bg-muted-foreground/40";
+      case "pending":
+        return "bg-amber-400 border-amber-500 text-black hover:bg-amber-300";
       default: // available
         return "bg-emerald-500 border-emerald-600 text-white hover:bg-emerald-400";
     }
@@ -47,7 +49,7 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
   return (
     <div className="w-full h-full overflow-auto pb-12 scrollbar-hide">
       <div className="inline-flex min-w-full flex-col items-center gap-6 md:gap-12 p-4 md:p-8 origin-top scale-[0.6] sm:scale-[0.7] md:scale-90 lg:scale-100">
-        
+
         {/* Stage Area */}
         <div className="w-full max-w-[600px] h-12 md:h-16 bg-gradient-to-b from-primary/20 to-transparent rounded-t-[50%] border-t-4 border-primary/30 flex items-center justify-center mb-4 md:mb-8">
           <span className="text-primary font-bold tracking-[0.3em] md:tracking-[0.5em] text-xs md:text-sm uppercase">Stage</span>
@@ -58,16 +60,16 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-2 px-8">
               {zone.name}
             </h3>
-            
+
             <div className="flex gap-12 justify-center">
               {zone.sections.map((section) => (
                 <div key={section.name} className="flex flex-col gap-2">
                   <div className="text-xs text-center text-muted-foreground mb-2">{section.name}</div>
-                  
+
                   {section.rows.map((row) => {
                     const aislePositions = row.aisles || [];
                     const rowSeats = Array.from({ length: row.seatCount }).map((_, i) => i + 1);
-                    
+
                     // Group seats into chunks based on aisles
                     const seatGroups: number[][] = [];
                     let currentGroup: number[] = [];
@@ -83,7 +85,7 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                     return (
                       <div key={row.label} className="flex items-center justify-center gap-3 w-full">
                         <span className="w-6 text-xs font-mono text-muted-foreground text-right">{row.label}</span>
-                        
+
                         <div className="flex items-center justify-center gap-6 flex-1">
                           {seatGroups.map((group, groupIdx) => {
                             let alignmentClass = "justify-center";
@@ -98,7 +100,7 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                                 {group.map((seatNum) => {
                                   const seatData = getSeat(zone.name, section.name, row.label, seatNum);
                                   const status = seatData?.status || "available";
-                                  
+
                                   const seatObj: Seat = seatData || {
                                     id: `temp-${zone.name}-${section.name}-${row.label}-${seatNum}`,
                                     eventId: 0,
@@ -133,7 +135,7 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                             );
                           })}
                         </div>
-                        
+
                         <span className="w-6 text-xs font-mono text-muted-foreground text-left">{row.label}</span>
                       </div>
                     );
