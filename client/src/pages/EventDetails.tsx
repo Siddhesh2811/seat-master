@@ -31,31 +31,21 @@ export default function EventDetails() {
     setConfigJson(JSON.stringify(event.configuration, null, 2));
   }
 
-  const [userRole, setUserRole] = useState<"admin" | "user">("admin");
-
   const handleSeatClick = (seat: Seat) => {
-    if (userRole === "admin") {
-      // Admin cycle: any status
-      const nextStatus: Record<SeatStatus, SeatStatus> = {
-        available: "reserved",
-        reserved: "blocked",
-        blocked: "available",
-        pending: "reserved" // Admin approves pending
-      };
-      const newStatus = nextStatus[seat.status as SeatStatus] || "available";
-      updateSeats.mutate({ eventId: id, ids: [seat.id], status: newStatus });
-    } else {
-      // User can only request available seats
-      if (seat.status === "available") {
-        updateSeats.mutate({
-          eventId: id,
-          ids: [seat.id],
-          status: "pending",
-          requestedBy: "Guest User"
-        });
-        toast({ title: "Request Sent", description: "Your reservation request is pending admin approval." });
-      }
-    }
+    // Cycle: available -> reserved -> blocked -> available
+    const nextStatus: Record<SeatStatus, SeatStatus> = {
+      available: "reserved",
+      reserved: "blocked",
+      blocked: "available"
+    };
+    
+    const newStatus = nextStatus[seat.status as SeatStatus] || "available";
+    
+    updateSeats.mutate({
+      eventId: id,
+      ids: [seat.id],
+      status: newStatus
+    });
   };
 
   const handleConfigSave = () => {
@@ -93,24 +83,6 @@ export default function EventDetails() {
           </div>
           
           <div className="flex items-center gap-2 w-full sm:w-auto">
-             <div className="flex items-center bg-muted rounded-lg p-1 border border-border">
-               <Button 
-                 variant={userRole === "admin" ? "secondary" : "ghost"} 
-                 size="sm" 
-                 onClick={() => setUserRole("admin")}
-                 className="h-7 text-xs"
-               >
-                 Admin
-               </Button>
-               <Button 
-                 variant={userRole === "user" ? "secondary" : "ghost"} 
-                 size="sm" 
-                 onClick={() => setUserRole("user")}
-                 className="h-7 text-xs"
-               >
-                 User
-               </Button>
-             </div>
              <Button 
                 variant="outline" 
                 size="sm"
@@ -140,9 +112,8 @@ export default function EventDetails() {
 
             <TabsContent value="visualizer" className="mt-0">
                <div className="bg-card rounded-xl border border-border shadow-sm min-h-[600px] flex flex-col">
-                 <div className="p-4 border-b border-border flex flex-wrap gap-4 text-xs font-medium justify-center bg-muted/30 rounded-t-xl">
+                 <div className="p-4 border-b border-border flex gap-4 text-xs font-medium justify-center bg-muted/30 rounded-t-xl">
                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /> Available</div>
-                   <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-yellow-400" /> Pending Approval</div>
                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-destructive" /> Reserved</div>
                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-muted-foreground/30" /> Blocked</div>
                  </div>

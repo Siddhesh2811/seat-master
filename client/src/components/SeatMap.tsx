@@ -27,8 +27,6 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case "pending":
-        return "bg-yellow-400 border-yellow-500 text-yellow-900 hover:bg-yellow-300";
       case "reserved":
         return "bg-destructive border-destructive text-destructive-foreground hover:bg-destructive/90";
       case "blocked":

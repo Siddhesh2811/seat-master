@@ -83,11 +83,7 @@ export class MemStorage implements IStorage {
     for (const id of updates.ids) {
       const seat = this.seats.get(id);
       if (seat && seat.eventId === eventId) {
-        const updatedSeat = { 
-          ...seat, 
-          status: updates.status,
-          requestedBy: updates.requestedBy 
-        };
+        const updatedSeat = { ...seat, status: updates.status };
         this.seats.set(id, updatedSeat);
         updatedSeats.push(updatedSeat);
       }
