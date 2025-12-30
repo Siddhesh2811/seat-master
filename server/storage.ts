@@ -23,6 +23,7 @@ export interface IStorage {
   getUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   deleteUser(id: number): Promise<void>;
+  updateUserRole(id: number, role: "admin" | "user"): Promise<User>;
 
   // Seats
   getSeats(eventId: number): Promise<Seat[]>;
@@ -101,6 +102,15 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<void> {
     await db.delete(users).where(eq(users.id, id));
+  }
+
+  async updateUserRole(id: number, role: "admin" | "user"): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 
   // === Seats ===

@@ -177,6 +177,19 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  app.patch("/api/users/:id/role", isAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const { role } = z.object({ role: z.enum(["admin", "user"]) }).parse(req.body);
+
+    // Prevent changing own role
+    if (req.user!.id === id) {
+      return res.status(403).send("Cannot change your own role");
+    }
+
+    const user = await storage.updateUserRole(id, role);
+    res.json(user);
+  });
+
   // Initial Seed Data
   if ((await storage.getEvents()).length === 0) {
     await storage.createEvent({

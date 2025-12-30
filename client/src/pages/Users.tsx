@@ -1,4 +1,4 @@
-import { useUsersList, useDeleteUser } from "@/hooks/use-users-list";
+import { useUsersList, useDeleteUser, useUpdateUserRole } from "@/hooks/use-users-list";
 import { useUser } from "@/hooks/use-user";
 import { Sidebar } from "@/components/Sidebar";
 import {
@@ -18,6 +18,7 @@ export default function Users() {
     const { data: users, isLoading, refetch, isRefetching } = useUsersList();
     const { user: currentUser } = useUser();
     const deleteUser = useDeleteUser();
+    const updateRole = useUpdateUserRole();
 
     const handleDelete = (id: number) => {
         if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
@@ -85,20 +86,36 @@ export default function Users() {
                                                         {user.password}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleDelete(user.id)}
-                                                            disabled={deleteUser.isPending || user.id === currentUser?.id}
-                                                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                            title={user.id === currentUser?.id ? "Cannot delete yourself" : "Delete User"}
-                                                        >
-                                                            {deleteUser.isPending && deleteUser.variables === user.id ? (
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                            ) : (
-                                                                <Trash2 className="h-4 w-4" />
-                                                            )}
-                                                        </Button>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    const newRole = user.role === "admin" ? "user" : "admin";
+                                                                    if (confirm(`Promote ${user.username} to ${newRole}?`)) {
+                                                                        updateRole.mutate({ id: user.id, role: newRole });
+                                                                    }
+                                                                }}
+                                                                disabled={updateRole.isPending || user.id === currentUser?.id}
+                                                            >
+                                                                {user.role === "admin" ? "Demote" : "Promote"}
+                                                            </Button>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleDelete(user.id)}
+                                                                disabled={deleteUser.isPending || user.id === currentUser?.id}
+                                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                                title={user.id === currentUser?.id ? "Cannot delete yourself" : "Delete User"}
+                                                            >
+                                                                {deleteUser.isPending && deleteUser.variables === user.id ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                ) : (
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                )}
+                                                            </Button>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

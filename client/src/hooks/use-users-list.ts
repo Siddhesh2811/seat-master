@@ -30,3 +30,29 @@ export function useDeleteUser() {
         },
     });
 }
+
+export function useUpdateUserRole() {
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
+
+    return useMutation({
+        mutationFn: async ({ id, role }: { id: number; role: "admin" | "user" }) => {
+            const res = await fetch(`/api/users/${id}/role`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role }),
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || "Failed to update role");
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+            toast({ title: "Role Updated", description: "User role has been successfully updated." });
+        },
+        onError: (error) => {
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        },
+    });
+}
