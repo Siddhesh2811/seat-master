@@ -64,55 +64,80 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                 <div key={section.name} className="flex flex-col gap-2">
                   <div className="text-xs text-center text-muted-foreground mb-2">{section.name}</div>
                   
-                  {section.rows.map((row) => (
-                    <div key={row.label} className="flex items-center justify-center gap-3 w-full">
-                      <span className="w-6 text-xs font-mono text-muted-foreground text-right">{row.label}</span>
-                      
-                      <div className="flex items-center justify-center gap-1.5 flex-1">
-                        {Array.from({ length: row.seatCount }).map((_, i) => {
-                          const seatNum = i + 1;
-                          const hasAisle = row.aisles?.includes(i);
-                          const seatData = getSeat(zone.name, section.name, row.label, seatNum);
-                          const status = seatData?.status || "available";
-                          
-                          const seatObj: Seat = seatData || {
-                            id: `temp-${zone.name}-${section.name}-${row.label}-${seatNum}`,
-                            eventId: 0,
-                            status: "available",
-                            label: { zone: zone.name, section: section.name, row: row.label, seat: seatNum.toString() }
-                          };
+                  {section.rows.map((row) => {
+                    const aislePositions = row.aisles || [];
+                    const rowSeats = Array.from({ length: row.seatCount }).map((_, i) => i + 1);
+                    
+                    // Group seats into chunks based on aisles
+                    const seatGroups: number[][] = [];
+                    let currentGroup: number[] = [];
+                    rowSeats.forEach((seatNum, idx) => {
+                      currentGroup.push(seatNum);
+                      if (aislePositions.includes(idx + 1) && idx < rowSeats.length - 1) {
+                        seatGroups.push(currentGroup);
+                        currentGroup = [];
+                      }
+                    });
+                    if (currentGroup.length > 0) seatGroups.push(currentGroup);
 
-                          return (
-                            <div key={seatNum} className="flex items-center">
-                              {hasAisle && <div className="w-8" />}
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => onSeatClick(seatObj)}
-                                    className={cn(
-                                      "w-8 h-8 rounded-t-lg rounded-b-sm text-[10px] font-bold shadow-sm transition-colors border-b-2 flex items-center justify-center",
-                                      getStatusColor(status)
-                                    )}
-                                  >
-                                    {seatNum}
-                                  </motion.button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{zone.name} • {section.name}</p>
-                                  <p>Row {row.label} • Seat {seatNum}</p>
-                                  <p className="capitalize font-bold mt-1 text-xs">{status}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                          );
-                        })}
+                    return (
+                      <div key={row.label} className="flex items-center justify-center gap-3 w-full">
+                        <span className="w-6 text-xs font-mono text-muted-foreground text-right">{row.label}</span>
+                        
+                        <div className="flex items-center justify-center gap-6 flex-1">
+                          {seatGroups.map((group, groupIdx) => {
+                            let alignmentClass = "justify-center";
+                            if (seatGroups.length > 1) {
+                              if (groupIdx === 0) alignmentClass = "justify-end";
+                              else if (groupIdx === seatGroups.length - 1) alignmentClass = "justify-start";
+                              else alignmentClass = "justify-center";
+                            }
+
+                            return (
+                              <div key={groupIdx} className={cn("flex gap-1.5 flex-1", alignmentClass)}>
+                                {group.map((seatNum) => {
+                                  const seatData = getSeat(zone.name, section.name, row.label, seatNum);
+                                  const status = seatData?.status || "available";
+                                  
+                                  const seatObj: Seat = seatData || {
+                                    id: `temp-${zone.name}-${section.name}-${row.label}-${seatNum}`,
+                                    eventId: 0,
+                                    status: "available",
+                                    label: { zone: zone.name, section: section.name, row: row.label, seat: seatNum.toString() }
+                                  };
+
+                                  return (
+                                    <Tooltip key={seatNum}>
+                                      <TooltipTrigger asChild>
+                                        <motion.button
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={() => onSeatClick(seatObj)}
+                                          className={cn(
+                                            "w-8 h-8 rounded-t-lg rounded-b-sm text-[10px] font-bold shadow-sm transition-colors border-b-2 flex items-center justify-center",
+                                            getStatusColor(status)
+                                          )}
+                                        >
+                                          {seatNum}
+                                        </motion.button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{zone.name} • {section.name}</p>
+                                        <p>Row {row.label} • Seat {seatNum}</p>
+                                        <p className="capitalize font-bold mt-1 text-xs">{status}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        <span className="w-6 text-xs font-mono text-muted-foreground text-left">{row.label}</span>
                       </div>
-                      
-                      <span className="w-6 text-xs font-mono text-muted-foreground text-left">{row.label}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ))}
             </div>
