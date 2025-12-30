@@ -32,9 +32,10 @@ export default function EventDetails() {
   }
 
   const handleSeatClick = (seat: Seat) => {
-    // Cycle: available -> reserved -> blocked -> available
+    // Cycle: available -> pending -> reserved -> blocked -> available
     const nextStatus: Record<SeatStatus, SeatStatus> = {
-      available: "reserved",
+      available: "pending",
+      pending: "reserved",
       reserved: "blocked",
       blocked: "available"
     };
@@ -44,7 +45,8 @@ export default function EventDetails() {
     updateSeats.mutate({
       eventId: id,
       ids: [seat.id],
-      status: newStatus
+      status: newStatus,
+      requestedBy: newStatus === "pending" ? "Guest User" : undefined
     });
   };
 
@@ -112,8 +114,9 @@ export default function EventDetails() {
 
             <TabsContent value="visualizer" className="mt-0">
                <div className="bg-card rounded-xl border border-border shadow-sm min-h-[600px] flex flex-col">
-                 <div className="p-4 border-b border-border flex gap-4 text-xs font-medium justify-center bg-muted/30 rounded-t-xl">
+                 <div className="p-4 border-b border-border flex flex-wrap gap-4 text-xs font-medium justify-center bg-muted/30 rounded-t-xl">
                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /> Available</div>
+                   <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-yellow-400" /> Pending Approval</div>
                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-destructive" /> Reserved</div>
                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-muted-foreground/30" /> Blocked</div>
                  </div>

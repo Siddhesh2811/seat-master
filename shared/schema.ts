@@ -20,12 +20,13 @@ export const seats = pgTable("seats", {
 });
 
 // === TYPES ===
-export type SeatStatus = "available" | "reserved" | "blocked";
+export type SeatStatus = "available" | "pending" | "reserved" | "blocked";
 
 export interface Seat {
   id: string;
   eventId: number;
   status: SeatStatus;
+  requestedBy?: string;
   label: {
     zone: string;
     section: string;
@@ -85,7 +86,8 @@ export const insertEventSchema = createInsertSchema(events).omit({
 export const seatSchema = z.object({
   id: z.string(),
   eventId: z.number(),
-  status: z.enum(["available", "reserved", "blocked"]),
+  status: z.enum(["available", "pending", "reserved", "blocked"]),
+  requestedBy: z.string().optional(),
   label: z.object({
     zone: z.string(),
     section: z.string(),
@@ -102,7 +104,8 @@ export type UpdateEventRequest = Partial<InsertEvent>;
 // Request to update a single seat or bulk update
 export const updateSeatStatusSchema = z.object({
   ids: z.array(z.string()),
-  status: z.enum(["available", "reserved", "blocked"]),
+  status: z.enum(["available", "pending", "reserved", "blocked"]),
+  requestedBy: z.string().optional(),
 });
 
 export type UpdateSeatStatusRequest = z.infer<typeof updateSeatStatusSchema>;
