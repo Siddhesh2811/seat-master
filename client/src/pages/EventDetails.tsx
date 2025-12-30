@@ -72,9 +72,9 @@ export default function EventDetails() {
   if (!event) return <div>Event not found</div>;
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background overflow-x-hidden">
       <Sidebar />
-      <main className="md:pl-64 flex-1 flex flex-col h-screen overflow-hidden">
+      <main className="md:pl-64 flex-1 flex flex-col h-screen overflow-hidden w-full">
         {/* Header */}
         <div className="border-b border-border bg-card px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-3">
           <div>

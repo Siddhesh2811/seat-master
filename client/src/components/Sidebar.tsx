@@ -10,7 +10,7 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border shadow-sm z-50 flex flex-col">
+    <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border shadow-sm z-50 flex flex-col transition-transform duration-300 -translate-x-full md:translate-x-0">
       <div className="p-6 border-b border-border/50">
         <h1 className="text-2xl font-bold font-display bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           SeatMaster
