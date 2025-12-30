@@ -31,23 +31,31 @@ export default function EventDetails() {
     setConfigJson(JSON.stringify(event.configuration, null, 2));
   }
 
+  const [userRole, setUserRole] = useState<"admin" | "user">("admin");
+
   const handleSeatClick = (seat: Seat) => {
-    // Cycle: available -> pending -> reserved -> blocked -> available
-    const nextStatus: Record<SeatStatus, SeatStatus> = {
-      available: "pending",
-      pending: "reserved",
-      reserved: "blocked",
-      blocked: "available"
-    };
-    
-    const newStatus = nextStatus[seat.status as SeatStatus] || "available";
-    
-    updateSeats.mutate({
-      eventId: id,
-      ids: [seat.id],
-      status: newStatus,
-      requestedBy: newStatus === "pending" ? "Guest User" : undefined
-    });
+    if (userRole === "admin") {
+      // Admin cycle: any status
+      const nextStatus: Record<SeatStatus, SeatStatus> = {
+        available: "reserved",
+        reserved: "blocked",
+        blocked: "available",
+        pending: "reserved" // Admin approves pending
+      };
+      const newStatus = nextStatus[seat.status as SeatStatus] || "available";
+      updateSeats.mutate({ eventId: id, ids: [seat.id], status: newStatus });
+    } else {
+      // User can only request available seats
+      if (seat.status === "available") {
+        updateSeats.mutate({
+          eventId: id,
+          ids: [seat.id],
+          status: "pending",
+          requestedBy: "Guest User"
+        });
+        toast({ title: "Request Sent", description: "Your reservation request is pending admin approval." });
+      }
+    }
   };
 
   const handleConfigSave = () => {
@@ -85,6 +93,24 @@ export default function EventDetails() {
           </div>
           
           <div className="flex items-center gap-2 w-full sm:w-auto">
+             <div className="flex items-center bg-muted rounded-lg p-1 border border-border">
+               <Button 
+                 variant={userRole === "admin" ? "secondary" : "ghost"} 
+                 size="sm" 
+                 onClick={() => setUserRole("admin")}
+                 className="h-7 text-xs"
+               >
+                 Admin
+               </Button>
+               <Button 
+                 variant={userRole === "user" ? "secondary" : "ghost"} 
+                 size="sm" 
+                 onClick={() => setUserRole("user")}
+                 className="h-7 text-xs"
+               >
+                 User
+               </Button>
+             </div>
              <Button 
                 variant="outline" 
                 size="sm"
