@@ -25,8 +25,8 @@ export default function Events() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <main className="pl-64 flex-1">
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <main className="md:pl-64 flex-1">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8">
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>

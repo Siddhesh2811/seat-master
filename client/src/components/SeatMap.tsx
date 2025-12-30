@@ -45,12 +45,12 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
   }
 
   return (
-    <div className="w-full h-full overflow-auto pb-12">
-      <div className="inline-flex min-w-full flex-col items-center gap-12 p-8">
+    <div className="w-full h-full overflow-auto pb-12 scrollbar-hide">
+      <div className="inline-flex min-w-full flex-col items-center gap-6 md:gap-12 p-4 md:p-8 origin-top scale-[0.6] sm:scale-[0.7] md:scale-90 lg:scale-100">
         
         {/* Stage Area */}
-        <div className="w-3/4 h-16 bg-gradient-to-b from-primary/20 to-transparent rounded-t-[50%] border-t-4 border-primary/30 flex items-center justify-center mb-8">
-          <span className="text-primary font-bold tracking-[0.5em] text-sm uppercase">Stage</span>
+        <div className="w-full max-w-[600px] h-12 md:h-16 bg-gradient-to-b from-primary/20 to-transparent rounded-t-[50%] border-t-4 border-primary/30 flex items-center justify-center mb-4 md:mb-8">
+          <span className="text-primary font-bold tracking-[0.3em] md:tracking-[0.5em] text-xs md:text-sm uppercase">Stage</span>
         </div>
 
         {configuration.zones.map((zone) => (

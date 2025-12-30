@@ -74,31 +74,32 @@ export default function EventDetails() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <main className="pl-64 flex-1 flex flex-col h-screen overflow-hidden">
+      <main className="md:pl-64 flex-1 flex flex-col h-screen overflow-hidden">
         {/* Header */}
-        <div className="border-b border-border bg-card px-8 py-4 flex items-center justify-between shrink-0">
+        <div className="border-b border-border bg-card px-4 md:px-8 py-3 md:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 gap-3">
           <div>
-            <h1 className="text-xl font-bold font-display">{event.name}</h1>
-            <p className="text-sm text-muted-foreground">{event.venue} • {event.date}</p>
+            <h1 className="text-lg md:text-xl font-bold font-display">{event.name}</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">{event.venue} • {event.date}</p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
              <Button 
                 variant="outline" 
                 size="sm"
+                className="flex-1 sm:flex-none"
                 onClick={() => {
                    if(confirm("Reset all seat statuses to Available?")) resetSeats.mutate(id);
                 }}
                 disabled={resetSeats.isPending}
               >
-               <RotateCcw className="mr-2 h-4 w-4" />
-               Reset All Seats
+               <RotateCcw className="mr-1 h-3 w-3" />
+               Reset
              </Button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto bg-muted/10 p-8">
+        <div className="flex-1 overflow-auto bg-muted/10 p-4 md:p-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
             <TabsList className="grid w-full max-w-md grid-cols-2">
               <TabsTrigger value="visualizer">
