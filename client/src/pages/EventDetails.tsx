@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRoute } from "wouter";
 import { useEvent, useUpdateEvent } from "@/hooks/use-events";
-import { useSeats, useUpdateSeats, useResetSeats, useBookSeat, useApproveSeat, useRejectSeat } from "@/hooks/use-seats";
+import { useSeats, useUpdateSeats, useResetSeats, useBookSeat, useApproveSeat, useRejectSeat, useRegenerateSeats } from "@/hooks/use-seats";
 import { useUser } from "@/hooks/use-user";
 import { Sidebar } from "@/components/Sidebar";
 import { SeatMap } from "@/components/SeatMap";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, RotateCcw, Monitor, Settings2 } from "lucide-react";
+import { Loader2, Save, RotateCcw, Monitor, Settings2, RefreshCw } from "lucide-react";
 import type { Seat, EventConfiguration, SeatStatus } from "@shared/schema";
 
 export default function EventDetails() {
@@ -23,6 +23,7 @@ export default function EventDetails() {
   const updateEvent = useUpdateEvent();
   const updateSeats = useUpdateSeats();
   const resetSeats = useResetSeats();
+  const regenerateSeats = useRegenerateSeats();
   const bookSeat = useBookSeat();
   const approveSeat = useApproveSeat();
   const rejectSeat = useRejectSeat();
@@ -122,18 +123,32 @@ export default function EventDetails() {
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
             {user?.role === "admin" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none"
-                onClick={() => {
-                  if (confirm("Reset all seat statuses to Available?")) resetSeats.mutate(id);
-                }}
-                disabled={resetSeats.isPending}
-              >
-                <RotateCcw className="mr-1 h-3 w-3" />
-                Reset
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                  onClick={() => {
+                    if (confirm("Reset all seat statuses to Available?")) resetSeats.mutate(id);
+                  }}
+                  disabled={resetSeats.isPending}
+                >
+                  <RotateCcw className="mr-1 h-3 w-3" />
+                  Reset
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                  onClick={() => {
+                    if (confirm("Regenerate all seats? This will delete all current bookings!")) regenerateSeats.mutate(id);
+                  }}
+                  disabled={regenerateSeats.isPending}
+                >
+                  <RefreshCw className="mr-1 h-3 w-3" />
+                  Regenerate
+                </Button>
+              </>
             )}
           </div>
         </div>

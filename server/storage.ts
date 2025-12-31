@@ -29,6 +29,7 @@ export interface IStorage {
   getSeats(eventId: number): Promise<Seat[]>;
   updateSeats(eventId: number, updates: UpdateSeatStatusRequest): Promise<Seat[]>;
   resetSeats(eventId: number): Promise<Seat[]>;
+  regenerateSeats(eventId: number): Promise<Seat[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -159,6 +160,17 @@ export class DatabaseStorage implements IStorage {
     return result.map(s => ({ ...s, status: s.status as SeatStatus }));
   }
 
+  async regenerateSeats(eventId: number): Promise<Seat[]> {
+    const event = await this.getEvent(eventId);
+    if (!event) throw new Error("Event not found");
+
+    console.log(`Regenerating seats for event ${eventId}...`);
+    await db.delete(seats).where(eq(seats.eventId, eventId));
+    await this.generateSeatsForEvent(event);
+
+    return this.getSeats(eventId);
+  }
+
   // === Helpers ===
   private async generateSeatsForEvent(event: Event) {
     const { zones } = event.configuration;
@@ -194,7 +206,7 @@ export class DatabaseStorage implements IStorage {
       // Batch insert?
       // SQLite limit is variables, Postgres should be fine with reasonable batch size.
       // Drizzle insert many
-      await db.insert(seats).values(allSeats).onConflictDoNothing();
+      await db.insert(seats).values(allSeats);
       console.log("Seats generation complete");
     } else {
       console.log("No seats to generate from configuration");

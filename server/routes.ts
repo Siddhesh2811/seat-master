@@ -164,6 +164,17 @@ export async function registerRoutes(
     res.json(seats);
   });
 
+  app.post("/api/events/:id/seats/regenerate", isAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    try {
+      const seats = await storage.regenerateSeats(id);
+      res.json(seats);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to regenerate seats";
+      res.status(500).json({ message });
+    }
+  });
+
   // Admin: Get all users
   app.get("/api/users", isAdmin, async (req, res) => {
     const users = await storage.getUsers();

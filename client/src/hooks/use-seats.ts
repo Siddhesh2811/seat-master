@@ -42,6 +42,29 @@ export function useUpdateSeats() {
   });
 }
 
+export function useRegenerateSeats() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (eventId: number) => {
+      const res = await fetch(`/api/events/${eventId}/seats/regenerate`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to regenerate seats");
+      return await res.json();
+    },
+    onSuccess: (_, eventId) => {
+      queryClient.invalidateQueries({ queryKey: [api.seats.list.path, eventId] });
+      toast({ title: "Regenerated", description: "Seats have been successfully regenerated from configuration" });
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+}
+
 export function useResetSeats() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
