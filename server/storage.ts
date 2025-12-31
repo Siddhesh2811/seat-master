@@ -116,9 +116,7 @@ export class DatabaseStorage implements IStorage {
 
   // === Seats ===
   async getSeats(eventId: number): Promise<Seat[]> {
-    console.log(`[Storage] Querying seats for eventId: ${eventId}`);
     const result = await db.select().from(seats).where(eq(seats.eventId, eventId));
-    console.log(`[Storage] DB returned ${result.length} rows`);
     return result.map(s => ({ ...s, status: s.status as SeatStatus }));
   }
 

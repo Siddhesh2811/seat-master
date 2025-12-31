@@ -105,7 +105,7 @@ export const seatSchema = z.object({
   id: z.string(),
   eventId: z.number(),
   status: z.enum(["available", "reserved", "blocked", "pending"]),
-  userId: z.number().optional(),
+  userId: z.number().nullable().optional(),
   label: z.object({
     zone: z.string(),
     section: z.string(),

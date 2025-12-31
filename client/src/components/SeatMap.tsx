@@ -20,10 +20,6 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
         s.label.row === row &&
         s.label.seat === seatNum.toString()
     );
-    // Debug specific failure
-    if (!found && seats.length > 0 && seatNum === 1 && row === "A") {
-      console.log(`Failed to find seat: ${zone}-${section}-${row}-${seatNum}`);
-    }
     return found;
   };
 
@@ -46,15 +42,6 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
         <p className="text-muted-foreground">Loading seat map...</p>
       </div>
     );
-  }
-
-  console.log(`SeatMap rendering: ${seats.length} seats loaded.`);
-  if (seats.length > 0) {
-    console.log("Sample seat from DB:", seats[0]);
-    console.log("Sample seat label:", seats[0].label);
-  }
-  if (configuration.zones.length > 0) {
-    console.log("Configuration Sample:", configuration.zones[0].sections[0]);
   }
 
   return (

@@ -10,23 +10,10 @@ export function useSeats(eventId: number) {
       const url = buildUrl(api.seats.list.path, { id: eventId });
       const res = await fetch(url, {
         credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Pragma": "no-cache",
-          "Cache-Control": "no-cache"
-        }
+        headers: { "Cache-Control": "no-cache" }
       });
       if (!res.ok) throw new Error("Failed to fetch seats");
-      const json = await res.json();
-      console.log("useSeats: Raw JSON from server:", json);
-      try {
-        const parsed = api.seats.list.responses[200].parse(json);
-        console.log("useSeats: Zod parse successful. Count:", parsed.length);
-        return parsed;
-      } catch (err) {
-        console.error("useSeats: Zod Validation Failed!", err);
-        throw err;
-      }
+      return api.seats.list.responses[200].parse(await res.json());
     },
     enabled: !isNaN(eventId),
   });
