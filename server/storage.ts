@@ -53,7 +53,7 @@ export class DatabaseStorage implements IStorage {
 
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
     const [event] = await db.insert(events).values(insertEvent).returning();
-    this.generateSeatsForEvent(event);
+    await this.generateSeatsForEvent(event);
     return event;
   }
 
@@ -132,13 +132,19 @@ export class DatabaseStorage implements IStorage {
         updateData.userId = updates.userId;
       }
 
+      console.log(`Updating seat ${seatId} with data:`, updateData);
       const [updated] = await db
         .update(seats)
         .set(updateData)
         .where(eq(seats.id, seatId))
         .returning();
 
-      if (updated) updatedSeats.push({ ...updated, status: updated.status as SeatStatus });
+      if (updated) {
+        console.log("Seat updated:", updated.id);
+        updatedSeats.push({ ...updated, status: updated.status as SeatStatus });
+      } else {
+        console.log("Seat NOT found or NOT updated:", seatId);
+      }
     }
     return updatedSeats;
   }
