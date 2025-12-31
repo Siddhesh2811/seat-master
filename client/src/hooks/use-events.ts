@@ -75,6 +75,7 @@ export function useUpdateEvent() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [api.events.list.path] });
       queryClient.invalidateQueries({ queryKey: [api.events.get.path, data.id] });
+      queryClient.invalidateQueries({ queryKey: [api.seats.list.path, data.id] });
       toast({ title: "Success", description: "Event updated" });
     },
     onError: (error) => {

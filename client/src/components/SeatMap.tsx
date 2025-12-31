@@ -46,6 +46,8 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
     );
   }
 
+  console.log(`SeatMap rendering: ${seats.length} seats loaded.`);
+
   return (
     <div className="w-full h-full overflow-auto pb-12 scrollbar-hide">
       <div className="inline-flex min-w-full flex-col items-center gap-6 md:gap-12 p-4 md:p-8 origin-top scale-[0.6] sm:scale-[0.7] md:scale-90 lg:scale-100">
@@ -114,10 +116,12 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                                         <motion.button
                                           whileHover={{ scale: 1.1 }}
                                           whileTap={{ scale: 0.9 }}
-                                          onClick={() => onSeatClick(seatObj)}
+                                          onClick={() => !seatObj.id.startsWith("temp") && onSeatClick(seatObj)}
+                                          disabled={seatObj.id.startsWith("temp")}
                                           className={cn(
                                             "w-8 h-8 rounded-t-lg rounded-b-sm text-[10px] font-bold shadow-sm transition-colors border-b-2 flex items-center justify-center",
-                                            getStatusColor(status)
+                                            getStatusColor(status),
+                                            seatObj.id.startsWith("temp") && "opacity-50 cursor-not-allowed bg-gray-300 border-gray-400 text-gray-500"
                                           )}
                                         >
                                           {seatNum}
@@ -127,6 +131,7 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
                                         <p>{zone.name} • {section.name}</p>
                                         <p>Row {row.label} • Seat {seatNum}</p>
                                         <p className="capitalize font-bold mt-1 text-xs">{status}</p>
+                                        {seatObj.id.startsWith("temp") && <p className="text-xs text-destructive mt-1">Not synced to DB</p>}
                                       </TooltipContent>
                                     </Tooltip>
                                   );

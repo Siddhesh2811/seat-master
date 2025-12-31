@@ -190,10 +190,14 @@ export class DatabaseStorage implements IStorage {
     });
 
     if (allSeats.length > 0) {
+      console.log(`Generating ${allSeats.length} seats for event ${event.id}`);
       // Batch insert?
       // SQLite limit is variables, Postgres should be fine with reasonable batch size.
       // Drizzle insert many
       await db.insert(seats).values(allSeats).onConflictDoNothing();
+      console.log("Seats generation complete");
+    } else {
+      console.log("No seats to generate from configuration");
     }
   }
 }
