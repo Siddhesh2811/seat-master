@@ -8,7 +8,14 @@ export function useSeats(eventId: number) {
     queryKey: [api.seats.list.path, eventId],
     queryFn: async () => {
       const url = buildUrl(api.seats.list.path, { id: eventId });
-      const res = await fetch(url, { credentials: "include" });
+      const res = await fetch(url, {
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Pragma": "no-cache",
+          "Cache-Control": "no-cache"
+        }
+      });
       if (!res.ok) throw new Error("Failed to fetch seats");
       return api.seats.list.responses[200].parse(await res.json());
     },

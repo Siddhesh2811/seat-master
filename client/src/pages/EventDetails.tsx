@@ -104,6 +104,18 @@ export default function EventDetails() {
     }
   };
 
+  const handleDebugFetch = async () => {
+    try {
+      const res = await fetch(`/api/events/${id}/seats`, { cache: "no-store" });
+      const json = await res.json();
+      console.log("DEBUG: Raw Fetch Result:", json);
+      alert(`Debug Fetch: Found ${Array.isArray(json) ? json.length : "INVALID"} seats. Check console.`);
+    } catch (e) {
+      console.error(e);
+      alert("Debug Fetch Failed");
+    }
+  };
+
   if (isEventLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -147,6 +159,13 @@ export default function EventDetails() {
                 >
                   <RefreshCw className="mr-1 h-3 w-3" />
                   Regenerate
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDebugFetch}
+                >
+                  🐞 Debug
                 </Button>
               </>
             )}
