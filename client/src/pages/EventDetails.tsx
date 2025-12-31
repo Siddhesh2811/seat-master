@@ -18,7 +18,7 @@ export default function EventDetails() {
   const { toast } = useToast();
 
   const { data: event, isLoading: isEventLoading } = useEvent(id);
-  const { data: seats, isLoading: isSeatsLoading } = useSeats(id);
+  const { data: seats, isLoading: isSeatsLoading, refetch, isRefetching } = useSeats(id);
 
   const updateEvent = useUpdateEvent();
   const updateSeats = useUpdateSeats();
@@ -105,7 +105,6 @@ export default function EventDetails() {
   };
 
 
-
   if (isEventLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -124,6 +123,16 @@ export default function EventDetails() {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+              className="flex-1 sm:flex-none"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
             {user?.role === "admin" && (
               <>
                 <Button
