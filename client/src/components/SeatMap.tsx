@@ -13,16 +13,18 @@ interface SeatMapProps {
 export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMapProps) {
   // Helper to find seat status efficiently
   const getSeat = (zone: string, section: string, row: string, seatNum: number) => {
-    // ID format: EVENTID-ZONE-SECTION-ROW-SEATNUM
-    // Since we don't know the EventID easily here without prop drilling or parsing,
-    // we can search by the label components which is safer.
-    return seats.find(
+    const found = seats.find(
       (s) =>
         s.label.zone === zone &&
         s.label.section === section &&
         s.label.row === row &&
         s.label.seat === seatNum.toString()
     );
+    // Debug specific failure
+    if (!found && seats.length > 0 && seatNum === 1 && row === "A") {
+      console.log(`Failed to find seat: ${zone}-${section}-${row}-${seatNum}`);
+    }
+    return found;
   };
 
   const getStatusColor = (status?: string) => {
@@ -47,6 +49,13 @@ export function SeatMap({ configuration, seats, onSeatClick, isLoading }: SeatMa
   }
 
   console.log(`SeatMap rendering: ${seats.length} seats loaded.`);
+  if (seats.length > 0) {
+    console.log("Sample seat from DB:", seats[0]);
+    console.log("Sample seat label:", seats[0].label);
+  }
+  if (configuration.zones.length > 0) {
+    console.log("Configuration Sample:", configuration.zones[0].sections[0]);
+  }
 
   return (
     <div className="w-full h-full overflow-auto pb-12 scrollbar-hide">
