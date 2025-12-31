@@ -17,7 +17,16 @@ export function useSeats(eventId: number) {
         }
       });
       if (!res.ok) throw new Error("Failed to fetch seats");
-      return api.seats.list.responses[200].parse(await res.json());
+      const json = await res.json();
+      console.log("useSeats: Raw JSON from server:", json);
+      try {
+        const parsed = api.seats.list.responses[200].parse(json);
+        console.log("useSeats: Zod parse successful. Count:", parsed.length);
+        return parsed;
+      } catch (err) {
+        console.error("useSeats: Zod Validation Failed!", err);
+        throw err;
+      }
     },
     enabled: !isNaN(eventId),
   });
