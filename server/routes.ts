@@ -80,11 +80,17 @@ export async function registerRoutes(
   // Seats
   app.get(api.seats.list.path, async (req, res) => {
     const id = Number(req.params.id);
+    console.log(`[GET] Fetching seats for event ${id}`);
+
     // Check if event exists first
     const event = await storage.getEvent(id);
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (!event) {
+      console.log(`Event ${id} not found`);
+      return res.status(404).json({ message: "Event not found" });
+    }
 
     const seats = await storage.getSeats(id);
+    console.log(`Found ${seats.length} seats for event ${id}`);
     res.json(seats);
   });
 
